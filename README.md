@@ -2,6 +2,7 @@
 
 A fully decentralized, full-stack application for managing patient healthcare records. Built with a Next.js frontend and powered by Soroban smart contracts on the Stellar network, this dApp provides a secure, permissionless, and immutable way to register patients and log medical records.
 
+🔗 **Live Demo:** [https://medical-records-system-2.vercel.app/](https://medical-records-system-2.vercel.app/)
 
 ## Project Description
 The Medical Records System bridges the gap between modern web interfaces and blockchain infrastructure. Instead of relying on centralized databases, this application uses a Soroban smart contract to store cryptographic references to medical records. It ensures that data remains tamper-proof while taking advantage of Stellar's ~5s finality and sub-cent transaction costs.
