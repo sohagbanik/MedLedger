@@ -1,5 +1,6 @@
 "use client";
 
+import { cache, cacheKey } from "@/lib/cache";
 import {
   Contract,
   Networks,
@@ -214,12 +215,16 @@ export function toScValBool(value: boolean): xdr.ScVal {
  * Calls: register_patient(caller: Address, name: String)
  */
 export async function registerPatient(caller: string, name: string) {
-  return callContract(
+  const result = await callContract(
     "register_patient",
     [toScValAddress(caller), toScValString(name)],
     caller,
     true
   );
+  // Invalidate registration cache so subsequent reads reflect new state
+  cache.delete(cacheKey("is_registered", caller));
+  cache.delete(cacheKey("get_patient", caller));
+  return result;
 }
 
 /**
@@ -235,7 +240,7 @@ export async function addRecord(
   notes: string,
   reporterName: string
 ) {
-  return callContract(
+  const result = await callContract(
     "add_record",
     [
       toScValAddress(patient),
@@ -247,6 +252,10 @@ export async function addRecord(
     caller,
     true
   );
+  // Invalidate records cache so next view fetches fresh data
+  cache.delete(cacheKey("get_records", caller, patient));
+  cache.delete(cacheKey("get_record_count", patient));
+  return result;
 }
 
 /**
@@ -254,12 +263,15 @@ export async function addRecord(
  * Calls: grant_access(caller: Address, accessor: Address)
  */
 export async function grantAccess(caller: string, accessor: string) {
-  return callContract(
+  const result = await callContract(
     "grant_access",
     [toScValAddress(caller), toScValAddress(accessor)],
     caller,
     true
   );
+  // Invalidate access cache
+  cache.delete(cacheKey("has_access", caller, accessor));
+  return result;
 }
 
 /**
@@ -267,12 +279,14 @@ export async function grantAccess(caller: string, accessor: string) {
  * Calls: revoke_access(caller: Address, accessor: Address)
  */
 export async function revokeAccess(caller: string, accessor: string) {
-  return callContract(
+  const result = await callContract(
     "revoke_access",
     [toScValAddress(caller), toScValAddress(accessor)],
     caller,
     true
   );
+  cache.delete(cacheKey("has_access", caller, accessor));
+  return result;
 }
 
 /**
@@ -308,10 +322,15 @@ export async function getRecords(caller: string, patient: string) {
  * Calls: is_registered(patient: Address) -> bool
  */
 export async function isRegistered(patient: string) {
-  return readContract(
+  const key = cacheKey("is_registered", patient);
+  const cached = cache.get<boolean>(key);
+  if (cached !== undefined) return cached;
+  const result = await readContract(
     "is_registered",
     [toScValAddress(patient)]
   );
+  cache.set(key, result);
+  return result;
 }
 
 /**
@@ -319,10 +338,15 @@ export async function isRegistered(patient: string) {
  * Calls: get_patient(patient: Address) -> Patient | null
  */
 export async function getPatient(patient: string) {
-  return readContract(
+  const key = cacheKey("get_patient", patient);
+  const cached = cache.get(key);
+  if (cached !== undefined) return cached;
+  const result = await readContract(
     "get_patient",
     [toScValAddress(patient)]
   );
+  cache.set(key, result);
+  return result;
 }
 
 /**
@@ -330,10 +354,15 @@ export async function getPatient(patient: string) {
  * Calls: has_access(patient: Address, accessor: Address) -> bool
  */
 export async function hasAccess(patient: string, accessor: string) {
-  return readContract(
+  const key = cacheKey("has_access", patient, accessor);
+  const cached = cache.get<boolean>(key);
+  if (cached !== undefined) return cached;
+  const result = await readContract(
     "has_access",
     [toScValAddress(patient), toScValAddress(accessor)]
   );
+  cache.set(key, result);
+  return result;
 }
 
 /**
@@ -341,10 +370,15 @@ export async function hasAccess(patient: string, accessor: string) {
  * Calls: get_record_count(patient: Address) -> u64
  */
 export async function getRecordCount(patient: string) {
-  return readContract(
+  const key = cacheKey("get_record_count", patient);
+  const cached = cache.get<number>(key);
+  if (cached !== undefined) return cached;
+  const result = await readContract(
     "get_record_count",
     [toScValAddress(patient)]
   );
+  cache.set(key, result);
+  return result;
 }
 
 export { nativeToScVal, scValToNative, Address, xdr };
