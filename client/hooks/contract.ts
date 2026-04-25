@@ -164,8 +164,9 @@ export async function readContract(
   params: xdr.ScVal[] = [],
   caller?: string
 ) {
+  // Use caller, or connected wallet, or random key (last resort)
   const account =
-    caller || Keypair.random().publicKey();
+    caller || (await getWalletAddress()) || Keypair.random().publicKey();
   const sim = await callContract(method, params, account, false);
   if (
     rpc.Api.isSimulationSuccess(sim as rpc.Api.SimulateTransactionSuccessResponse) &&
