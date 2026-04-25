@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stellar Dapp",
+  title: "Medical Records System — Decentralized Health Records on Stellar",
   description:
-    "Fullstack Dapp built on Stellar",
+    "A fully decentralized mini-dApp for managing patient healthcare records. Built with Next.js and Soroban smart contracts on the Stellar network, featuring permissionless registration, access control, and sub-cent transaction costs.",
 };
 
 export default function RootLayout({
