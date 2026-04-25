@@ -148,8 +148,8 @@ This runs **14 Soroban tests** covering:
 
 ### Test Output Screenshot
 
-<!-- Replace with your actual screenshot after running `npm test` -->
-> ⚠️ **TODO:** Add screenshot of `npm test` output here after running tests.
+<img width="1056" height="353" alt="image" src="https://github.com/user-attachments/assets/ad62a2ca-b169-44f5-a1b8-75bb5622b17d" />
+
 
 ## Caching Strategy
 
