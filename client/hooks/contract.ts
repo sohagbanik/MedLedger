@@ -164,19 +164,26 @@ export async function readContract(
   params: xdr.ScVal[] = [],
   caller?: string
 ) {
-  // Use caller, or connected wallet, or random key (last resort)
-  const account =
-    caller || (await getWalletAddress()) || Keypair.random().publicKey();
-  const sim = await callContract(method, params, account, false);
-  if (
-    rpc.Api.isSimulationSuccess(sim as rpc.Api.SimulateTransactionSuccessResponse) &&
-    (sim as rpc.Api.SimulateTransactionSuccessResponse).result
-  ) {
-    return scValToNative(
-      (sim as rpc.Api.SimulateTransactionSuccessResponse).result!.retval
-    );
+  try {
+    // Use caller, or connected wallet — never use random keys (they don't exist on testnet)
+    const account = caller || (await getWalletAddress());
+    if (!account) {
+      throw new Error("Connect your wallet to query the contract.");
+    }
+    const sim = await callContract(method, params, account, false);
+    if (
+      rpc.Api.isSimulationSuccess(sim as rpc.Api.SimulateTransactionSuccessResponse) &&
+      (sim as rpc.Api.SimulateTransactionSuccessResponse).result
+    ) {
+      return scValToNative(
+        (sim as rpc.Api.SimulateTransactionSuccessResponse).result!.retval
+      );
+    }
+    return null;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Contract read failed";
+    throw new Error(message);
   }
-  return null;
 }
 
 // ============================================================
@@ -328,7 +335,8 @@ export async function isRegistered(patient: string) {
   if (cached !== undefined) return cached;
   const result = await readContract(
     "is_registered",
-    [toScValAddress(patient)]
+    [toScValAddress(patient)],
+    patient
   );
   cache.set(key, result);
   return result;
@@ -344,7 +352,8 @@ export async function getPatient(patient: string) {
   if (cached !== undefined) return cached;
   const result = await readContract(
     "get_patient",
-    [toScValAddress(patient)]
+    [toScValAddress(patient)],
+    patient
   );
   cache.set(key, result);
   return result;
@@ -360,7 +369,8 @@ export async function hasAccess(patient: string, accessor: string) {
   if (cached !== undefined) return cached;
   const result = await readContract(
     "has_access",
-    [toScValAddress(patient), toScValAddress(accessor)]
+    [toScValAddress(patient), toScValAddress(accessor)],
+    patient
   );
   cache.set(key, result);
   return result;
@@ -376,7 +386,8 @@ export async function getRecordCount(patient: string) {
   if (cached !== undefined) return cached;
   const result = await readContract(
     "get_record_count",
-    [toScValAddress(patient)]
+    [toScValAddress(patient)],
+    patient
   );
   cache.set(key, result);
   return result;
