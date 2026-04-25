@@ -368,8 +368,8 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
     { key: "access", label: "Access", icon: <ShieldIcon />, color: "#34d399" },
   ];
 
-  const formatTimestamp = (ts: number) => {
-    return new Date(ts * 1000).toLocaleString();
+  const formatTimestamp = (ts: number | bigint) => {
+    return new Date(Number(ts) * 1000).toLocaleString();
   };
 
   return (
