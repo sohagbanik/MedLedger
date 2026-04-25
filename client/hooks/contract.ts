@@ -103,8 +103,16 @@ export async function callContract(
   caller: string,
   sign: boolean = true
 ) {
+  // Wrap getAccount in its own try-catch — the Stellar SDK can throw
+  // complex error objects that crash the browser tab if unhandled.
+  let account;
+  try {
+    account = await server.getAccount(caller);
+  } catch {
+    throw new Error(`Account not found: ${caller.slice(0, 8)}...${caller.slice(-4)}. Make sure the account is funded on Testnet.`);
+  }
+
   const contract = new Contract(CONTRACT_ADDRESS);
-  const account = await server.getAccount(caller);
 
   const tx = new TransactionBuilder(account, {
     fee: "100",
@@ -114,7 +122,12 @@ export async function callContract(
     .setTimeout(30)
     .build();
 
-  const simulated = await server.simulateTransaction(tx);
+  let simulated;
+  try {
+    simulated = await server.simulateTransaction(tx);
+  } catch {
+    throw new Error(`Network error while simulating ${method}. Please try again.`);
+  }
 
   if (rpc.Api.isSimulationError(simulated)) {
     throw new Error(
