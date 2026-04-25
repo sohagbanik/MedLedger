@@ -4,7 +4,9 @@ A fully decentralized, full-stack application for managing patient healthcare re
 
 🔗 **Live Demo:** [https://medical-records-system-2.vercel.app/](https://medical-records-system-2.vercel.app/)
 
-🎬 **Demo Video:** [Watch 1-min walkthrough](YOUR_VIDEO_LINK_HERE)
+### 🎬 Demo Video
+
+https://github.com/user-attachments/assets/244b4a59-421f-4b06-9de1-9794b81b2f0f
 
 ---
 
