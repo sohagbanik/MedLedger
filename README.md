@@ -95,7 +95,7 @@ Through a clean, intuitive web interface, the system allows users to interact di
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/medical-records-system-2.git
+git clone https://github.com/sohagbanik/medical-records-system-2.git
 cd medical-records-system-2
 
 # Install frontend dependencies
