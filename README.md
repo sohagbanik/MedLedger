@@ -1,3 +1,4 @@
+
 # Full-Stack Medical Records System on Stellar 🏥
 
 A fully decentralized, full-stack application for managing patient healthcare records. Built with a Next.js frontend and powered by Soroban smart contracts on the Stellar network, this dApp provides a secure, permissionless, and immutable way to register patients and log medical records.
@@ -238,13 +239,11 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 ### Application UI
 <img width="1920" height="1080" alt="Contract Interaction" src="https://github.com/user-attachments/assets/67814f02-4caf-4d90-9fde-6e33351d5d2d" />
 
-### Mobile UI
-> **Note to self:** Replace the placeholder below with a mobile layout screenshot!
-<!-- 📱 Paste your mobile screenshot URL below this line -->
-<img width="390" height="844" alt="Mobile Responsive UI" src="https://via.placeholder.com/390x844.png?text=Mobile+UI+Screenshot+Placeholder" />
-
 ### Contract Interaction
 <img width="1920" height="1080" alt="Medical Records System UI" src="https://github.com/user-attachments/assets/108f7c10-3ad2-409e-91ad-c2f527abc65e" />
+
+### Mobile UI
+<img width="1080" height="3414" alt="Screenshot_20260429_192936_Chrome" src="https://github.com/user-attachments/assets/7f7a55f1-0ecc-4aac-976e-482cb8daa00c" />
 ---
 
 ## License
