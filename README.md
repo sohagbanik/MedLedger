@@ -238,6 +238,11 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 ### Application UI
 <img width="1920" height="1080" alt="Contract Interaction" src="https://github.com/user-attachments/assets/67814f02-4caf-4d90-9fde-6e33351d5d2d" />
 
+### Mobile UI
+> **Note to self:** Replace the placeholder below with a mobile layout screenshot!
+<!-- 📱 Paste your mobile screenshot URL below this line -->
+<img width="390" height="844" alt="Mobile Responsive UI" src="https://via.placeholder.com/390x844.png?text=Mobile+UI+Screenshot+Placeholder" />
+
 ### Contract Interaction
 <img width="1920" height="1080" alt="Medical Records System UI" src="https://github.com/user-attachments/assets/108f7c10-3ad2-409e-91ad-c2f527abc65e" />
 ---
