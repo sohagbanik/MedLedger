@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone)]
@@ -25,6 +25,8 @@ pub enum DataKey {
     RecordCounter(Address),
     Records(Address, u64),
     Access(Address, Address),
+    /// Stores the AccessLog contract address for inter-contract calls
+    AccessLogContract,
 }
 
 #[contract]
@@ -32,6 +34,22 @@ pub struct Contract;
 
 #[contractimpl]
 impl Contract {
+    /// Initialize the contract with the AccessLog contract address.
+    /// This enables inter-contract calls for access event logging.
+    /// Can only be called once.
+    pub fn init(env: Env, access_log_contract: Address) {
+        if env
+            .storage()
+            .instance()
+            .has(&DataKey::AccessLogContract)
+        {
+            panic!("already initialized");
+        }
+        env.storage()
+            .instance()
+            .set(&DataKey::AccessLogContract, &access_log_contract);
+    }
+
     /// Register caller as a patient. Permissionless - anyone can register.
     pub fn register_patient(env: Env, caller: Address, name: String) {
         caller.require_auth();
@@ -93,6 +111,7 @@ impl Contract {
     }
 
     /// Grant access to another address to view caller's records.
+    /// Also makes an inter-contract call to AccessLog to log the event.
     pub fn grant_access(env: Env, caller: Address, accessor: Address) {
         caller.require_auth();
         let patients: Map<Address, Patient> = env
@@ -104,15 +123,22 @@ impl Contract {
             patients.contains_key(caller.clone()),
             "not registered as patient"
         );
-        let access_key = DataKey::Access(caller.clone(), accessor);
+        let access_key = DataKey::Access(caller.clone(), accessor.clone());
         env.storage().instance().set(&access_key, &true);
+
+        // ── Inter-contract call: log the access event ──
+        Self::log_to_access_log(&env, caller, accessor, String::from_str(&env, "grant"));
     }
 
     /// Revoke access from another address.
+    /// Also makes an inter-contract call to AccessLog to log the event.
     pub fn revoke_access(env: Env, caller: Address, accessor: Address) {
         caller.require_auth();
-        let access_key = DataKey::Access(caller.clone(), accessor);
+        let access_key = DataKey::Access(caller.clone(), accessor.clone());
         env.storage().instance().remove(&access_key);
+
+        // ── Inter-contract call: log the revoke event ──
+        Self::log_to_access_log(&env, caller, accessor, String::from_str(&env, "revoke"));
     }
 
     /// Get a specific medical record. Caller must be the patient or have been granted access.
@@ -213,6 +239,33 @@ impl Contract {
     pub fn get_record_count(env: Env, patient: Address) -> u64 {
         let counter_key = DataKey::RecordCounter(patient);
         env.storage().instance().get(&counter_key).unwrap_or(0)
+    }
+
+    /// Get the configured AccessLog contract address.
+    pub fn get_access_log_contract(env: Env) -> Option<Address> {
+        env.storage()
+            .instance()
+            .get(&DataKey::AccessLogContract)
+    }
+
+    // ── Private helper: inter-contract call to AccessLog ──
+
+    /// Makes a cross-contract call to the AccessLog contract if one is configured.
+    /// This is the core inter-contract call pattern: Contract → AccessLog.
+    fn log_to_access_log(env: &Env, patient: Address, accessor: Address, action: String) {
+        if let Some(log_addr) = env
+            .storage()
+            .instance()
+            .get::<_, Address>(&DataKey::AccessLogContract)
+        {
+            // Inter-contract invocation using env.invoke_contract()
+            // This calls AccessLogContract.log_access(patient, accessor, action)
+            let _: u64 = env.invoke_contract(
+                &log_addr,
+                &Symbol::new(env, "log_access"),
+                (patient, accessor, action).try_into_val(env).unwrap(),
+            );
+        }
     }
 }
 

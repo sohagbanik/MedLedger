@@ -3,12 +3,33 @@ use super::*;
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{Env, String};
 
+// Import the AccessLog contract for inter-contract call testing
+use access_log::AccessLogContract;
+
+// ── Helper: set up both contracts and wire them together ──
+
+fn setup_with_access_log(env: &Env) -> (ContractClient, Address) {
+    let access_log_id = env.register(AccessLogContract, ());
+    let contract_id = env.register(Contract, ());
+    let client = ContractClient::new(env, &contract_id);
+    client.init(&access_log_id);
+    (client, access_log_id)
+}
+
+fn setup(env: &Env) -> ContractClient {
+    let contract_id = env.register(Contract, ());
+    ContractClient::new(env, &contract_id)
+}
+
+// ══════════════════════════════════════════════════════════
+// Original tests (backward compatibility without AccessLog)
+// ══════════════════════════════════════════════════════════
+
 #[test]
 fn test_register_patient() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     client.register_patient(&patient, &String::from_str(&env, "John Doe"));
@@ -22,8 +43,7 @@ fn test_register_patient() {
 fn test_cannot_register_twice() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
     let patient = Address::generate(&env);
     client.register_patient(&patient, &String::from_str(&env, "John Doe"));
     client.register_patient(&patient, &String::from_str(&env, "Jane Doe"));
@@ -33,8 +53,7 @@ fn test_cannot_register_twice() {
 fn test_permissionless_add_record() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
 
@@ -42,7 +61,6 @@ fn test_permissionless_add_record() {
     client.register_patient(&patient, &String::from_str(&env, "John Doe"));
 
     // PERMISSIONLESS: Anyone can add record for patient - no auth required
-    // In real usage, any address can call add_record for any patient
     let record_id = client.add_record(
         &patient,
         &String::from_str(&env, "diagnosis"),
@@ -59,8 +77,7 @@ fn test_permissionless_add_record() {
 fn test_anyone_can_add_records() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     client.register_patient(&patient, &String::from_str(&env, "John Doe"));
@@ -96,8 +113,7 @@ fn test_anyone_can_add_records() {
 fn test_add_record_not_registered() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
     let unregistered = Address::generate(&env);
     client.add_record(
         &unregistered,
@@ -112,8 +128,7 @@ fn test_add_record_not_registered() {
 fn test_grant_access() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     let doctor = Address::generate(&env);
@@ -126,8 +141,7 @@ fn test_grant_access() {
 fn test_revoke_access() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     let doctor = Address::generate(&env);
@@ -142,8 +156,7 @@ fn test_revoke_access() {
 fn test_get_record_as_patient() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     client.register_patient(&patient, &String::from_str(&env, "John Doe"));
@@ -165,8 +178,7 @@ fn test_get_record_as_patient() {
 fn test_get_record_as_accessor() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     let doctor = Address::generate(&env);
@@ -190,8 +202,7 @@ fn test_get_record_as_accessor() {
 fn test_get_record_no_access() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     let stranger = Address::generate(&env);
@@ -212,8 +223,7 @@ fn test_get_record_no_access() {
 fn test_get_records_as_patient() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     client.register_patient(&patient, &String::from_str(&env, "John Doe"));
@@ -240,8 +250,7 @@ fn test_get_records_as_patient() {
 fn test_get_records_as_accessor() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     let doctor = Address::generate(&env);
@@ -263,8 +272,7 @@ fn test_get_records_as_accessor() {
 fn test_is_registered() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient = Address::generate(&env);
     let unregistered = Address::generate(&env);
@@ -277,8 +285,7 @@ fn test_is_registered() {
 fn test_multiple_patients_independent() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
 
     let patient1 = Address::generate(&env);
     let patient2 = Address::generate(&env);
@@ -327,9 +334,106 @@ fn test_multiple_patients_independent() {
 fn test_grant_access_not_registered() {
     let env = Env::default();
     env.mock_all_auths();
-    let contract_id = env.register(Contract, ());
-    let client = ContractClient::new(&env, &contract_id);
+    let client = setup(&env);
     let unregistered = Address::generate(&env);
     let accessor = Address::generate(&env);
     client.grant_access(&unregistered, &accessor);
+}
+
+// ══════════════════════════════════════════════════════════
+// New: Inter-contract call tests (Contract → AccessLog)
+// ══════════════════════════════════════════════════════════
+
+#[test]
+fn test_init_access_log_contract() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (client, access_log_id) = setup_with_access_log(&env);
+
+    let stored = client.get_access_log_contract();
+    assert!(stored.is_some());
+    assert_eq!(stored.unwrap(), access_log_id);
+}
+
+#[test]
+#[should_panic(expected = "already initialized")]
+fn test_cannot_init_twice() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (client, access_log_id) = setup_with_access_log(&env);
+    // Trying to init again should panic
+    client.init(&access_log_id);
+}
+
+#[test]
+fn test_grant_access_logs_to_access_log_contract() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (client, access_log_id) = setup_with_access_log(&env);
+    let access_log_client = access_log::AccessLogContractClient::new(&env, &access_log_id);
+
+    let patient = Address::generate(&env);
+    let doctor = Address::generate(&env);
+    client.register_patient(&patient, &String::from_str(&env, "John Doe"));
+
+    // Grant access — this should trigger an inter-contract call to AccessLog
+    client.grant_access(&patient, &doctor);
+
+    // Verify the event was logged in the AccessLog contract
+    let events = access_log_client.get_access_log(&patient);
+    assert_eq!(events.len(), 1);
+    let event = events.get(0).unwrap();
+    assert_eq!(event.action, String::from_str(&env, "grant"));
+    assert_eq!(event.accessor, doctor);
+}
+
+#[test]
+fn test_revoke_access_logs_to_access_log_contract() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (client, access_log_id) = setup_with_access_log(&env);
+    let access_log_client = access_log::AccessLogContractClient::new(&env, &access_log_id);
+
+    let patient = Address::generate(&env);
+    let doctor = Address::generate(&env);
+    client.register_patient(&patient, &String::from_str(&env, "John Doe"));
+
+    client.grant_access(&patient, &doctor);
+    client.revoke_access(&patient, &doctor);
+
+    // Verify both events were logged
+    let events = access_log_client.get_access_log(&patient);
+    assert_eq!(events.len(), 2);
+
+    let grant_event = events.get(0).unwrap();
+    assert_eq!(grant_event.action, String::from_str(&env, "grant"));
+
+    let revoke_event = events.get(1).unwrap();
+    assert_eq!(revoke_event.action, String::from_str(&env, "revoke"));
+}
+
+#[test]
+fn test_inter_contract_multiple_patients() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (client, access_log_id) = setup_with_access_log(&env);
+    let access_log_client = access_log::AccessLogContractClient::new(&env, &access_log_id);
+
+    let patient1 = Address::generate(&env);
+    let patient2 = Address::generate(&env);
+    let doctor = Address::generate(&env);
+
+    client.register_patient(&patient1, &String::from_str(&env, "John"));
+    client.register_patient(&patient2, &String::from_str(&env, "Jane"));
+
+    client.grant_access(&patient1, &doctor);
+    client.grant_access(&patient2, &doctor);
+    client.revoke_access(&patient1, &doctor);
+
+    // Patient1 should have 2 events (grant + revoke)
+    assert_eq!(access_log_client.get_event_count(&patient1), 2);
+    // Patient2 should have 1 event (grant)
+    assert_eq!(access_log_client.get_event_count(&patient2), 1);
+    // Total across all patients
+    assert_eq!(access_log_client.get_total_events(), 3);
 }
