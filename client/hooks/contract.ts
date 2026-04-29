@@ -403,13 +403,18 @@ export async function getRecordCount(patient: string) {
   const key = cacheKey("get_record_count", patient);
   const cached = cache.get<number>(key);
   if (cached !== undefined) return cached;
-  const result = await readContract(
-    "get_record_count",
-    [toScValAddress(patient)],
-    patient
-  );
-  cache.set(key, result);
-  return result;
+  try {
+    const result = await readContract(
+      "get_record_count",
+      [toScValAddress(patient)],
+      patient
+    );
+    cache.set(key, result);
+    return result;
+  } catch {
+    // Graceful fallback if the updated contract hasn't been deployed yet
+    return 0;
+  }
 }
 
 /**
@@ -417,12 +422,18 @@ export async function getRecordCount(patient: string) {
  * Calls: get_access_log(patient: Address) -> Vec<AccessEvent>
  */
 export async function getAccessLog(patient: string) {
-  return readContract(
-    "get_access_log",
-    [toScValAddress(patient)],
-    patient,
-    ACCESS_LOG_CONTRACT_ADDRESS
-  );
+  try {
+    const logs = await readContract(
+      "get_access_log",
+      [toScValAddress(patient)],
+      patient,
+      ACCESS_LOG_CONTRACT_ADDRESS
+    );
+    return logs;
+  } catch {
+    // Graceful fallback if the AccessLog contract hasn't been deployed yet
+    return [];
+  }
 }
 
 export { nativeToScVal, scValToNative, Address, xdr };

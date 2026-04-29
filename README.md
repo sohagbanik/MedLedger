@@ -17,7 +17,7 @@ https://github.com/user-attachments/assets/244b4a59-421f-4b06-9de1-9794b81b2f0f
 
 - [Table of Contents](#table-of-contents)
 - [Project Description](#project-description)
-- [Advanced Green Belt Features](#advanced-green-belt-features)
+- [Advanced Architecture Features](#advanced-architecture-features)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/244b4a59-421f-4b06-9de1-9794b81b2f0f
 
 The Medical Records System bridges the gap between modern web interfaces and blockchain infrastructure. Instead of relying on centralized databases, this application uses a Soroban smart contract to store cryptographic references to medical records. It ensures that data remains tamper-proof while taking advantage of Stellar's ~5s finality and sub-cent transaction costs.
 
-## Advanced Green Belt Features
+## Advanced Architecture Features
 
 This project implements advanced Soroban and frontend patterns to ensure production readiness:
 
