@@ -231,6 +231,7 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 | **Network** | Stellar Testnet |
 | **Main Contract Address** | `CCETBZNAQ4RL6HDW4B6WI4QD5LDRVDCGHHEEDUVFGP3RJYD45GVTWNOX` |
 | **Access Log Contract** | `CDD2K5XOWR6G36A5SIVZ3223EJJ77IHRYXZM66Z2CYCUB2L6U3YHYY67` |
+| **Inter-Contract Tx Hash** | `e1d44c9b360b6bbdf607d7c6753c52a0a25fa1b6f0e34c9c6f2a89c9c3e92381` |
 | **Live URL** | [medical-records-system-2.vercel.app](https://medical-records-system-2.vercel.app/) |
 | **Explorer** | [View on Stellar Lab](https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=CCETBZNAQ4RL6HDW4B6WI4QD5LDRVDCGHHEEDUVFGP3RJYD45GVTWNOX;;) |
 

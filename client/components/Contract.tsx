@@ -298,8 +298,6 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
     try {
       await registerPatient(walletAddress, patientName.trim());
       setTxStatus("Registered on-chain!");
-      setPatientInfo({ name: patientName, created_at: Date.now() });
-      setIsPatientRegistered(true);
       setPatientName("");
       setTimeout(() => setTxStatus(null), 5000);
     } catch (err: unknown) {
