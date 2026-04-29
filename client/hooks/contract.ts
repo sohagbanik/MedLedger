@@ -29,6 +29,10 @@ import {
 export const CONTRACT_ADDRESS =
   "CCETBZNAQ4RL6HDW4B6WI4QD5LDRVDCGHHEEDUVFGP3RJYD45GVTWNOX";
 
+/** Your deployed AccessLog contract ID */
+export const ACCESS_LOG_CONTRACT_ADDRESS =
+  "CDD2K5XOWR6G36A5SIVZ3223EJJ77IHRYXZM66Z2CYCUB2L6U3YHYY67";
+
 /** Network passphrase (testnet by default) */
 export const NETWORK_PASSPHRASE = Networks.TESTNET;
 
@@ -101,7 +105,8 @@ export async function callContract(
   method: string,
   params: xdr.ScVal[] = [],
   caller: string,
-  sign: boolean = true
+  sign: boolean = true,
+  contractAddress: string = CONTRACT_ADDRESS
 ) {
   // Wrap getAccount in its own try-catch — the Stellar SDK can throw
   // complex error objects that crash the browser tab if unhandled.
@@ -112,7 +117,7 @@ export async function callContract(
     throw new Error(`Account not found: ${caller.slice(0, 8)}...${caller.slice(-4)}. Make sure the account is funded on Testnet.`);
   }
 
-  const contract = new Contract(CONTRACT_ADDRESS);
+  const contract = new Contract(contractAddress);
 
   const tx = new TransactionBuilder(account, {
     fee: "100",
@@ -175,7 +180,8 @@ export async function callContract(
 export async function readContract(
   method: string,
   params: xdr.ScVal[] = [],
-  caller?: string
+  caller?: string,
+  contractAddress: string = CONTRACT_ADDRESS
 ) {
   try {
     // Use caller, or connected wallet — never use random keys (they don't exist on testnet)
@@ -183,7 +189,7 @@ export async function readContract(
     if (!account) {
       throw new Error("Connect your wallet to query the contract.");
     }
-    const sim = await callContract(method, params, account, false);
+    const sim = await callContract(method, params, account, false, contractAddress);
     if (
       rpc.Api.isSimulationSuccess(sim as rpc.Api.SimulateTransactionSuccessResponse) &&
       (sim as rpc.Api.SimulateTransactionSuccessResponse).result
@@ -404,6 +410,19 @@ export async function getRecordCount(patient: string) {
   );
   cache.set(key, result);
   return result;
+}
+
+/**
+ * Get access log for a patient from the AccessLog contract.
+ * Calls: get_access_log(patient: Address) -> Vec<AccessEvent>
+ */
+export async function getAccessLog(patient: string) {
+  return readContract(
+    "get_access_log",
+    [toScValAddress(patient)],
+    patient,
+    ACCESS_LOG_CONTRACT_ADDRESS
+  );
 }
 
 export { nativeToScVal, scValToNative, Address, xdr };

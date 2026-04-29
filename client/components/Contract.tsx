@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   registerPatient,
   addRecord,
@@ -10,6 +10,8 @@ import {
   hasAccess,
   grantAccess,
   revokeAccess,
+  getAccessLog,
+  getRecordCount,
   getWalletAddress,
   CONTRACT_ADDRESS,
 } from "@/hooks/contract";
@@ -177,6 +179,13 @@ interface PatientInfo {
   created_at: number;
 }
 
+interface AccessEvent {
+  patient: string;
+  accessor: string;
+  action: string;
+  timestamp: number;
+}
+
 type Tab = "register" | "add" | "view" | "access";
 
 // ── Main Component ───────────────────────────────────────────
@@ -207,8 +216,10 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
   // View records state
   const [viewPatient, setViewPatient] = useState("");
   const [records, setRecords] = useState<MedicalRecord[]>([]);
+  const [accessLogs, setAccessLogs] = useState<AccessEvent[]>([]);
   const [isLoadingRecords, setIsLoadingRecords] = useState(false);
   const [viewPatientInfo, setViewPatientInfo] = useState<PatientInfo | null>(null);
+  const [newRecordsToast, setNewRecordsToast] = useState(false);
 
   // Access management state
   const [accessAddress, setAccessAddress] = useState("");
@@ -239,8 +250,12 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
         setViewPatientInfo(info);
         const walletAddr = await getWalletAddress();
         const caller = walletAddr || viewPatient.trim();
-        const recs = await getRecords(caller, viewPatient.trim());
+        const [recs, logs] = await Promise.all([
+          getRecords(caller, viewPatient.trim()),
+          getAccessLog(viewPatient.trim())
+        ]);
         setRecords(Array.isArray(recs) ? recs : []);
+        setAccessLogs(Array.isArray(logs) ? logs : []);
         
         // Check if viewer has access (if not the patient)
         if (walletAddr && walletAddr !== viewPatient.trim()) {
@@ -256,6 +271,25 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
       setIsLoadingRecords(false);
     }
   }, [viewPatient]);
+
+  // ── Polling for real-time updates ──
+  
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeTab === "view" && viewPatientInfo && hasAccessGranted !== false) {
+      interval = setInterval(async () => {
+        try {
+          const count = await getRecordCount(viewPatient.trim());
+          if (count > records.length) {
+            setNewRecordsToast(true);
+          }
+        } catch {
+          // ignore polling errors
+        }
+      }, 10000);
+    }
+    return () => clearInterval(interval);
+  }, [activeTab, viewPatientInfo, hasAccessGranted, records.length, viewPatient]);
 
   const handleRegister = useCallback(async () => {
     if (!walletAddress) return setError("Connect wallet first");
@@ -375,6 +409,24 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
   return (
     <div className="w-full max-w-2xl animate-fade-in-up-delayed">
       {/* Toasts */}
+      {newRecordsToast && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#4fc3f7]/30 bg-[#4fc3f7]/10 px-4 py-3 backdrop-blur-sm animate-slide-down shadow-[0_0_20px_rgba(79,195,247,0.15)]">
+          <div className="flex items-center gap-3">
+            <span className="text-[#4fc3f7] animate-pulse"><AlertIcon /></span>
+            <span className="text-sm font-medium text-[#4fc3f7]">New records available!</span>
+          </div>
+          <button 
+            onClick={() => {
+              setNewRecordsToast(false);
+              checkPatientRegistration();
+            }}
+            className="text-xs font-semibold text-[#0a0a1a] bg-[#4fc3f7] px-3 py-1.5 rounded-lg hover:bg-[#4fc3f7]/90 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#f87171]/15 bg-[#f87171]/[0.05] px-4 py-3 backdrop-blur-sm animate-slide-down">
           <span className="mt-0.5 text-[#f87171]"><AlertIcon /></span>
@@ -590,6 +642,33 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
                     })}
                   </div>
                 )}
+
+                {/* Access Logs */}
+                {accessLogs.length > 0 && hasAccessGranted !== false && (
+                  <div className="mt-8 space-y-4 animate-fade-in-up-delayed">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-white/40 flex items-center gap-2">
+                      <ShieldIcon /> Access Log
+                    </h4>
+                    <div className="space-y-2 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
+                      {accessLogs.map((log, idx) => (
+                        <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 bg-[#0a0a1a] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-[0_0_10px_rgba(0,0,0,0.5)] z-10">
+                            <span className={cn("h-2.5 w-2.5 rounded-full", log.action === "grant" ? "bg-[#34d399]" : "bg-[#f87171]")} />
+                          </div>
+                          <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={cn("text-xs font-semibold", log.action === "grant" ? "text-[#34d399]" : "text-[#f87171]")}>
+                                Access {log.action === "grant" ? "Granted" : "Revoked"}
+                              </span>
+                              <span className="text-[10px] text-white/30 font-mono">{formatTimestamp(log.timestamp)}</span>
+                            </div>
+                            <p className="text-[10px] text-white/50 font-mono break-all">{log.accessor}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -613,8 +692,8 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
                   onChange={(e) => setViewPatient(e.target.value)} 
                   placeholder="Your address..." 
                 />
-                <div className="flex gap-3">
-                  <ShimmerButton onClick={handleCheckAccess} disabled={isCheckingAccess} shimmerColor="#4fc3f7" className="flex-1">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <ShimmerButton onClick={handleCheckAccess} disabled={isCheckingAccess} shimmerColor="#4fc3f7" className="w-full">
                     {isCheckingAccess ? <SpinnerIcon /> : <KeyIcon />} Check Access
                   </ShimmerButton>
                 </div>
@@ -630,11 +709,11 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
                 )}
 
                 {walletAddress ? (
-                  <div className="flex gap-3">
-                    <ShimmerButton onClick={handleGrantAccess} disabled={isGranting} shimmerColor="#34d399" className="flex-1">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <ShimmerButton onClick={handleGrantAccess} disabled={isGranting} shimmerColor="#34d399" className="w-full">
                       {isGranting ? <SpinnerIcon /> : <CheckIcon />} Grant Access
                     </ShimmerButton>
-                    <ShimmerButton onClick={handleRevokeAccess} disabled={isRevoking} shimmerColor="#f87171" className="flex-1">
+                    <ShimmerButton onClick={handleRevokeAccess} disabled={isRevoking} shimmerColor="#f87171" className="w-full">
                       {isRevoking ? <SpinnerIcon /> : <AlertIcon />} Revoke
                     </ShimmerButton>
                   </div>

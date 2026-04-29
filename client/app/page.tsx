@@ -122,7 +122,7 @@ export default function Home() {
         {/* Footer */}
         <div className="mt-10 flex flex-col items-center gap-4 animate-fade-in">
           {/* Medical records flow */}
-          <div className="flex items-center gap-3 text-xs text-white/20">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/20">
             {["Register", "Add Record", "View Records", "Grant Access"].map((step, i) => (
               <span key={step} className="flex items-center gap-3">
                 <span className="flex items-center gap-1.5">
@@ -147,7 +147,7 @@ export default function Home() {
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-4 text-[10px] text-white/15">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[10px] text-white/15">
             <span>Stellar Network</span>
             <span className="h-2.5 w-px bg-white/10" />
             <span>Freighter Wallet</span>
