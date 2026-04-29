@@ -202,8 +202,6 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
   // Register state
   const [patientName, setPatientName] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
-  const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(null);
-  const [isPatientRegistered, setIsPatientRegistered] = useState<boolean | null>(null);
 
   // Add record state
   const [recordPatient, setRecordPatient] = useState("");
@@ -237,7 +235,7 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
     setError(null);
     setIsLoadingRecords(true);
     try {
-      const [registered, info, recordCount] = await Promise.all([
+      const [registered, info] = await Promise.all([
         isRegistered(viewPatient.trim()),
         getPatient(viewPatient.trim()),
         getWalletAddress(),

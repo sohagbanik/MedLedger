@@ -5,7 +5,6 @@ import {
   Contract,
   Networks,
   TransactionBuilder,
-  Keypair,
   xdr,
   Address,
   nativeToScVal,
