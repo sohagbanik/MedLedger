@@ -244,7 +244,8 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 <img width="1920" height="1080" alt="Medical Records System UI" src="https://github.com/user-attachments/assets/108f7c10-3ad2-409e-91ad-c2f527abc65e" />
 
 ### Mobile UI
-<img width="1080" height="3414" alt="Screenshot_20260429_192936_Chrome" src="https://github.com/user-attachments/assets/7f7a55f1-0ecc-4aac-976e-482cb8daa00c" />
+<img width="715" height="1550" alt="IMG-20260429-WA0097" src="https://github.com/user-attachments/assets/6432b3fa-77c5-4e2c-be73-fdb02e34d388" />
+
 ---
 
 ## License
