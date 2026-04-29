@@ -4,6 +4,8 @@ A fully decentralized, full-stack application for managing patient healthcare re
 
 🔗 **Live Demo:** [https://medical-records-system-2.vercel.app/](https://medical-records-system-2.vercel.app/)
 
+[![CI](https://github.com/sohagbanik/medical-records-system-2/actions/workflows/ci.yml/badge.svg)](https://github.com/sohagbanik/medical-records-system-2/actions/workflows/ci.yml)
+
 ### 🎬 Demo Video
 
 https://github.com/user-attachments/assets/244b4a59-421f-4b06-9de1-9794b81b2f0f
@@ -12,13 +14,17 @@ https://github.com/user-attachments/assets/244b4a59-421f-4b06-9de1-9794b81b2f0f
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Project Description](#project-description)
+- [Advanced Green Belt Features](#advanced-green-belt-features)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Running Tests](#running-tests)
-- [Caching Strategy](#caching-strategy)
+- [Architecture Details](#architecture-details)
+  - [Inter-Contract Communication](#inter-contract-communication)
+  - [Caching Strategy](#caching-strategy)
 - [Smart Contract](#smart-contract)
 - [Live Deployment Details](#-live-deployment-details)
 - [Screenshots](#screenshots)
@@ -28,6 +34,15 @@ https://github.com/user-attachments/assets/244b4a59-421f-4b06-9de1-9794b81b2f0f
 ## Project Description
 
 The Medical Records System bridges the gap between modern web interfaces and blockchain infrastructure. Instead of relying on centralized databases, this application uses a Soroban smart contract to store cryptographic references to medical records. It ensures that data remains tamper-proof while taking advantage of Stellar's ~5s finality and sub-cent transaction costs.
+
+## Advanced Green Belt Features
+
+This project implements advanced Soroban and frontend patterns to ensure production readiness:
+
+- **Inter-Contract Communication:** When a patient grants or revokes access, the main `MedicalRecords` contract performs a secure `env.invoke_contract()` call to a separate `AccessLog` companion contract to permanently record the audit trail.
+- **CI/CD Pipeline:** Fully automated GitHub Actions workflow (`.github/workflows/ci.yml`) runs linting, type-checking, and tests (both Rust and frontend) on every push and PR to `main`.
+- **Real-Time Event Polling:** The frontend implements lightweight real-time polling to detect when new medical records are added to a patient's profile, providing a toast notification to refresh.
+- **Mobile-First Responsive UI:** The Next.js frontend is fully optimized for mobile devices, using Tailwind's robust responsive utility classes and structural flex wrappers to provide an excellent experience on all screen sizes.
 
 ## Features
 
@@ -153,7 +168,27 @@ This runs **14 Soroban tests** covering:
 <img width="1056" height="353" alt="image" src="https://github.com/user-attachments/assets/ad62a2ca-b169-44f5-a1b8-75bb5622b17d" />
 
 
-## Caching Strategy
+## Architecture Details
+
+### Inter-Contract Communication
+
+To decouple the core medical records logic from access auditing, we use a two-contract architecture:
+
+1. **Main Contract (`Contract`)**: Handles patient registration, records, and access rules.
+2. **Access Log Contract (`AccessLogContract`)**: A specialized ledger that strictly tracks "who accessed whose records and when".
+
+When `grant_access` or `revoke_access` is called on the Main Contract, it uses `env.invoke_contract()` to securely pass the event data to the Access Log contract:
+
+```rust
+// Main Contract -> Access Log Contract Invocation
+let _: u64 = env.invoke_contract(
+    &log_addr,
+    &Symbol::new(env, "log_access"),
+    (patient, accessor, action).try_into_val(env).unwrap(),
+);
+```
+
+### Caching Strategy
 
 The application implements a **TTL-based in-memory cache** (`client/lib/cache.ts`) to optimize read-only RPC calls to the Soroban network:
 
@@ -193,7 +228,8 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 | Detail | Value |
 |--------|-------|
 | **Network** | Stellar Testnet |
-| **Contract Address** | `CCETBZNAQ4RL6HDW4B6WI4QD5LDRVDCGHHEEDUVFGP3RJYD45GVTWNOX` |
+| **Main Contract Address** | `CCETBZNAQ4RL6HDW4B6WI4QD5LDRVDCGHHEEDUVFGP3RJYD45GVTWNOX` |
+| **Access Log Contract** | `CDD2K5XOWR6G36A5SIVZ3223EJJ77IHRYXZM66Z2CYCUB2L6U3YHYY67` |
 | **Live URL** | [medical-records-system-2.vercel.app](https://medical-records-system-2.vercel.app/) |
 | **Explorer** | [View on Stellar Lab](https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=CCETBZNAQ4RL6HDW4B6WI4QD5LDRVDCGHHEEDUVFGP3RJYD45GVTWNOX;;) |
 
