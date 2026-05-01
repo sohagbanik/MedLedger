@@ -37,6 +37,8 @@ impl AccessLogContract {
         accessor: Address,
         action: String,
     ) -> u64 {
+        patient.require_auth();
+        
         let event = AccessEvent {
             patient: patient.clone(),
             accessor: accessor.clone(),
