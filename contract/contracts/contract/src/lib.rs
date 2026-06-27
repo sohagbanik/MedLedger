@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Map, String, Symbol, Vec};
+use soroban_sdk::{contract, contractimpl, contracttype, vec, IntoVal, Address, Env, Map, String, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone)]
@@ -260,10 +260,16 @@ impl Contract {
         {
             // Inter-contract invocation using env.invoke_contract()
             // This calls AccessLogContract.log_access(patient, accessor, action)
+            let args = vec![
+                env,
+                patient.into_val(env),
+                accessor.into_val(env),
+                action.into_val(env),
+            ];
             let _: u64 = env.invoke_contract(
                 &log_addr,
                 &Symbol::new(env, "log_access"),
-                (patient, accessor, action).try_into_val(env).unwrap(),
+                args,
             );
         }
     }
