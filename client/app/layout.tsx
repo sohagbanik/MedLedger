@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { WalletProvider } from "@/contexts/WalletContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +32,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col bg-[#050510]">
-        {children}
+        <ErrorBoundary>
+          <WalletProvider>
+            {children}
+          </WalletProvider>
+        </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );

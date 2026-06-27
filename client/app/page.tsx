@@ -1,46 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Meteors } from "@/components/ui/meteors";
 import Navbar from "@/components/Navbar";
 import ContractUI from "@/components/Contract";
-import {
-  connectWallet,
-  getWalletAddress,
-  checkConnection,
-} from "@/hooks/contract";
+import FeedbackModal from "@/components/FeedbackModal";
+import { useWallet } from "@/contexts/WalletContext";
 
 export default function Home() {
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        if (await checkConnection()) {
-          const addr = await getWalletAddress();
-          if (addr) setWalletAddress(addr);
-        }
-      } catch {
-        /* Freighter not installed */
-      }
-    })();
-  }, []);
-
-  const handleConnect = useCallback(async () => {
-    setIsConnecting(true);
-    try {
-      setWalletAddress(await connectWallet());
-    } catch {
-      // handled in Contract component
-    } finally {
-      setIsConnecting(false);
-    }
-  }, []);
-
-  const handleDisconnect = useCallback(() => {
-    setWalletAddress(null);
-  }, []);
+  const { address, isConnecting, networkError, connect, disconnect } = useWallet();
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   return (
     <div className="relative flex flex-col min-h-screen bg-[#050510] overflow-hidden">
@@ -57,11 +26,26 @@ export default function Home() {
 
       {/* Navbar */}
       <Navbar
-        walletAddress={walletAddress}
-        onConnect={handleConnect}
-        onDisconnect={handleDisconnect}
+        walletAddress={address}
+        onConnect={connect}
+        onDisconnect={disconnect}
         isConnecting={isConnecting}
       />
+
+      {networkError && (
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-4 animate-fade-in-down">
+          <div className="flex items-center gap-3 rounded-xl border border-[#fbbf24]/30 bg-[#fbbf24]/10 px-4 py-3 backdrop-blur-sm">
+            <span className="text-[#fbbf24]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </span>
+            <span className="text-sm font-medium text-[#fbbf24]/90">{networkError}</span>
+          </div>
+        </div>
+      )}
 
       {/* Hero + Content */}
       <main className="relative z-10 flex flex-1 w-full max-w-5xl mx-auto flex-col items-center px-6 pt-10 pb-16">
@@ -114,8 +98,8 @@ export default function Home() {
 
         {/* Contract UI */}
         <ContractUI
-          walletAddress={walletAddress}
-          onConnect={handleConnect}
+          walletAddress={address}
+          onConnect={connect}
           isConnecting={isConnecting}
         />
 
@@ -154,8 +138,17 @@ export default function Home() {
             <span className="h-2.5 w-px bg-white/10" />
             <span>Soroban Smart Contracts</span>
           </div>
+
+          <button 
+            onClick={() => setIsFeedbackOpen(true)}
+            className="mt-4 rounded-full border border-[#4fc3f7]/30 bg-[#4fc3f7]/10 px-6 py-2 text-xs font-semibold text-[#4fc3f7] transition-all hover:bg-[#4fc3f7]/20 active:scale-95"
+          >
+            Leave Feedback
+          </button>
         </div>
       </main>
+
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </div>
   );
 }

@@ -224,8 +224,23 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 | `has_access` | ❌ Public | Check if access has been granted |
 | `get_record_count` | ❌ Public | Count of records for a patient |
 
-## 🚀 Live Deployment Details
+## Proof of 10+ User Wallet Interactions
 
+> [!NOTE]
+> This section is reserved for the Level 4 Green Belt audit requirement to demonstrate proof of 10+ user wallet interactions on Testnet.
+> 
+> - Tx 1: `[Transaction Hash]` - Registration
+> - Tx 2: `[Transaction Hash]` - Add Record
+> - Tx 3: `[Transaction Hash]` - Grant Access
+> - Tx 4: `[Transaction Hash]` - Registration
+> - Tx 5: `[Transaction Hash]` - Revoke Access
+> - Tx 6: `[Transaction Hash]` - Add Record
+> - Tx 7: `[Transaction Hash]` - Registration
+> - Tx 8: `[Transaction Hash]` - Grant Access
+> - Tx 9: `[Transaction Hash]` - Add Record
+> - Tx 10: `[Transaction Hash]` - View Access Log (Read)
+
+## 🚀 Live Deployment Details
 | Detail | Value |
 |--------|-------|
 | **Network** | Stellar Testnet |
