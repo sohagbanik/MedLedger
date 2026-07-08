@@ -6,6 +6,7 @@ use soroban_sdk::{Env, String};
 #[test]
 fn test_log_access_grant() {
     let env = Env::default();
+    env.mock_all_auths();
     let contract_id = env.register(AccessLogContract, ());
     let client = AccessLogContractClient::new(&env, &contract_id);
 
@@ -24,6 +25,7 @@ fn test_log_access_grant() {
 #[test]
 fn test_log_access_revoke() {
     let env = Env::default();
+    env.mock_all_auths();
     let contract_id = env.register(AccessLogContract, ());
     let client = AccessLogContractClient::new(&env, &contract_id);
 
@@ -43,6 +45,7 @@ fn test_log_access_revoke() {
 #[test]
 fn test_get_access_log() {
     let env = Env::default();
+    env.mock_all_auths();
     let contract_id = env.register(AccessLogContract, ());
     let client = AccessLogContractClient::new(&env, &contract_id);
 
@@ -68,6 +71,7 @@ fn test_get_access_log() {
 #[test]
 fn test_multiple_patients_independent_logs() {
     let env = Env::default();
+    env.mock_all_auths();
     let contract_id = env.register(AccessLogContract, ());
     let client = AccessLogContractClient::new(&env, &contract_id);
 
@@ -100,6 +104,7 @@ fn test_empty_access_log() {
 #[test]
 fn test_event_timestamps() {
     let env = Env::default();
+    env.mock_all_auths();
     let contract_id = env.register(AccessLogContract, ());
     let client = AccessLogContractClient::new(&env, &contract_id);
 
