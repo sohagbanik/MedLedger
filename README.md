@@ -247,6 +247,10 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 ### Mobile UI
 <img width="715" height="1550" alt="IMG-20260429-WA0097" src="https://github.com/user-attachments/assets/6432b3fa-77c5-4e2c-be73-fdb02e34d388" />
 
+### CI/CD Pipeline
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/202d26aa-28ba-41e4-b592-769ef1b940c3" />
+
+
 ---
 
 ## License
