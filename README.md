@@ -171,6 +171,54 @@ This runs **14 Soroban tests** covering:
 
 ## Architecture Details
 
+This project implements a multi-contract architecture on Soroban with inter-contract communication between the Medical Records contract and the AccessLog contract:
+
+```mermaid
+graph TB
+    subgraph Frontend["Next.js Frontend"]
+        UI["User Interface"]
+        UI -->|Connect| FW["Freighter Wallet"]
+        UI -->|Sign & Submit Tx| SDK["Stellar SDK / Soroban RPC"]
+    end
+
+    SDK -->|Invoke| MC
+
+    subgraph Contracts["Soroban Smart Contracts"]
+        MC["Medical Records Contract<br/>register_patient / add_record<br/>grant_access / revoke_access<br/>get_records / get_record_count"]
+        MC -->|"Inter-contract call:<br/>env.invoke_contract()"| AL["AccessLog Contract<br/>log_access / get_access_log<br/>get_event_count / get_total_events"]
+    end
+
+    MC -->|Emit Events| ES
+    AL -->|Emit Events| ES
+
+    subgraph EventStreaming["Event Streaming"]
+        ES["Contract Events"]
+        ES -->|Poll every 5s| Poller["Frontend Polling<br/>via getEvents RPC"]
+    end
+
+    Poller -->|Update| UI
+
+    subgraph Cache["TTL Cache Layer"]
+        TC["In-Memory Cache<br/>30s TTL per key<br/>Auto-invalidation on writes"]
+    end
+
+    SDK <-->|Read-only calls| TC
+    TC <-->|Cache miss| Contracts
+
+    style Frontend fill:#1a1a2e,stroke:#e94560,color:#fff
+    style Contracts fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style EventStreaming fill:#1a1a2e,stroke:#16213e,color:#fff
+    style Cache fill:#1a1a2e,stroke:#533483,color:#fff
+    style UI fill:#e94560,stroke:#e94560,color:#fff
+    style FW fill:#0f3460,stroke:#0f3460,color:#fff
+    style SDK fill:#0f3460,stroke:#0f3460,color:#fff
+    style MC fill:#e94560,stroke:#e94560,color:#fff
+    style AL fill:#533483,stroke:#533483,color:#fff
+    style ES fill:#16213e,stroke:#16213e,color:#fff
+    style Poller fill:#16213e,stroke:#16213e,color:#fff
+    style TC fill:#533483,stroke:#533483,color:#fff
+```
+
 ### Inter-Contract Communication
 
 To decouple the core medical records logic from access auditing, we use a two-contract architecture:
