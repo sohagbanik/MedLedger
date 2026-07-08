@@ -19,7 +19,7 @@ jobs:
           targets: wasm32v1-none
 
       - name: Install Stellar CLI
-        run: cargo install stellar-cli --locked
+        uses: stellar/stellar-cli@v27.0.0
 
       - name: Run Contract Tests
         working-directory: contract
