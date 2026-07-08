@@ -7,21 +7,41 @@ on:
     branches: [main]
 
 jobs:
-  lint-build-test:
-    name: Lint, Build & Test
+  contract:
+    name: Smart Contract Tests & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+
+      - name: Install Stellar CLI
+        run: cargo install stellar-cli --locked
+
+      - name: Run Contract Tests
+        working-directory: contract
+        run: cargo test --verbose
+
+      - name: Build WASM Contract
+        working-directory: contract
+        run: stellar contract build
+
+  frontend:
+    name: Frontend Lint, Build & Test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: client
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '24'
           cache: npm
           cache-dependency-path: client/package-lock.json
 
@@ -31,17 +51,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Build Frontend
-        run: npm run build
-
       - name: Test Frontend
         run: npm test
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          target: wasm32-unknown-unknown
-
-      - name: Test Smart Contracts
-        working-directory: contract
-        run: cargo test
+      - name: Build Frontend
+        run: npm run build
