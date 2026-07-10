@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MedLedger — Decentralized Health Records on Stellar",
+  title: "Medical Records System — Decentralized Health Records on Stellar",
   description:
     "A fully decentralized mini-dApp for managing patient healthcare records. Built with Next.js and Soroban smart contracts on the Stellar network, featuring permissionless registration, access control, and sub-cent transaction costs.",
 };

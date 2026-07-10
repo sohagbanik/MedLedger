@@ -455,7 +455,7 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
                 </svg>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white/90">MedLedger</h3>
+                <h3 className="text-sm font-semibold text-white/90">Medical Records System</h3>
                 <p className="text-[10px] text-white/25 font-mono mt-0.5">{truncate(CONTRACT_ADDRESS)}</p>
               </div>
             </div>
@@ -728,7 +728,7 @@ export default function ContractUI({ walletAddress, onConnect, isConnecting }: {
 
           {/* Footer */}
           <div className="border-t border-white/[0.04] px-6 py-3 flex items-center justify-between">
-            <p className="text-[10px] text-white/15">MedLedger &middot; Soroban &middot; Permissionless</p>
+            <p className="text-[10px] text-white/15">Medical Records &middot; Soroban &middot; Permissionless</p>
             <div className="flex items-center gap-2">
               {["Register", "Add", "View", "Access"].map((s, i) => (
                 <span key={s} className="flex items-center gap-1.5">
