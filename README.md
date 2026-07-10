@@ -1,11 +1,11 @@
 
-# Full-Stack Medical Records System on Stellar 🏥
+# MedLedger 🏥 — Decentralized Health Records on Stellar
 
 A fully decentralized, full-stack application for managing patient healthcare records. Built with a Next.js frontend and powered by Soroban smart contracts on the Stellar network, this dApp provides a secure, permissionless, and immutable way to register patients and log medical records.
 
-🔗 **Live Demo:** [https://medical-records-system-2.vercel.app/](https://medical-records-system-2.vercel.app/)
+🔗 **Live Demo:** [https://medledger2.vercel.app/](https://medledger2.vercel.app/)
 
-[![CI](https://github.com/sohagbanik/medical-records-system-2/actions/workflows/ci.yml/badge.svg)](https://github.com/sohagbanik/medical-records-system-2/actions/workflows/ci.yml)
+[![CI](https://github.com/sohagbanik/MedLedger/actions/workflows/ci.yml/badge.svg)](https://github.com/sohagbanik/MedLedger/actions/workflows/ci.yml)
 
 ### 🎬 Demo Video
 
@@ -34,7 +34,7 @@ https://github.com/user-attachments/assets/244b4a59-421f-4b06-9de1-9794b81b2f0f
 
 ## Project Description
 
-The Medical Records System bridges the gap between modern web interfaces and blockchain infrastructure. Instead of relying on centralized databases, this application uses a Soroban smart contract to store cryptographic references to medical records. It ensures that data remains tamper-proof while taking advantage of Stellar's ~5s finality and sub-cent transaction costs.
+MedLedger bridges the gap between modern web interfaces and blockchain infrastructure. Instead of relying on centralized databases, this application uses a Soroban smart contract to store cryptographic references to medical records. It ensures that data remains tamper-proof while taking advantage of Stellar's ~5s finality and sub-cent transaction costs.
 
 ## Advanced Architecture Features
 
@@ -113,8 +113,8 @@ Through a clean, intuitive web interface, the system allows users to interact di
 
 ```bash
 # Clone the repository
-git clone https://github.com/sohagbanik/medical-records-system-2.git
-cd medical-records-system-2
+git clone https://github.com/sohagbanik/MedLedger.git
+cd MedLedger
 
 # Install frontend dependencies
 cd client
@@ -171,7 +171,7 @@ This runs **14 Soroban tests** covering:
 
 ## Architecture Details
 
-This project implements a multi-contract architecture on Soroban with inter-contract communication between the Medical Records contract and the AccessLog contract:
+This project implements a multi-contract architecture on Soroban with inter-contract communication between the MedLedger contract and the AccessLog contract:
 
 ```mermaid
 graph TB
@@ -184,7 +184,7 @@ graph TB
     SDK -->|Invoke| MC
 
     subgraph Contracts["Soroban Smart Contracts"]
-        MC["Medical Records Contract<br/>register_patient / add_record<br/>grant_access / revoke_access<br/>get_records / get_record_count"]
+        MC["MedLedger Contract<br/>register_patient / add_record<br/>grant_access / revoke_access<br/>get_records / get_record_count"]
         MC -->|"Inter-contract call:<br/>env.invoke_contract()"| AL["AccessLog Contract<br/>log_access / get_access_log<br/>get_event_count / get_total_events"]
     end
 
@@ -223,7 +223,7 @@ graph TB
 
 To decouple the core medical records logic from access auditing, we use a two-contract architecture:
 
-1. **Main Contract (`Contract`)**: Handles patient registration, records, and access rules.
+1. **MedLedger Contract (`Contract`)**: Handles patient registration, records, and access rules.
 2. **Access Log Contract (`AccessLogContract`)**: A specialized ledger that strictly tracks "who accessed whose records and when".
 
 When `grant_access` or `revoke_access` is called on the Main Contract, it uses `env.invoke_contract()` to securely pass the event data to the Access Log contract:
@@ -282,7 +282,7 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 | **Access Log Contract** | `CDD2K5XOWR6G36A5SIVZ3223EJJ77IHRYXZM66Z2CYCUB2L6U3YHYY67` |
 | **Inter-Contract Tx Hash** | `e1d44c9b360b6bbdf607d7c6753c52a0a25fa1b6f0e34c9c6f2a89c9c3e92381` |
 | **Transaction Hash** | `9467b044a3d093cde0b3e37f556e62a18f5dd1c7e604ab5dee29b2126ffba60d` |
-| **Live URL** | [medical-records-system-2.vercel.app](https://medical-records-system-2.vercel.app/) |
+| **Live URL** | [medledger2.vercel.app](https://medledger2.vercel.app/) |
 | **Explorer** | [View on Stellar Lab](https://lab.stellar.org/smart-contracts/contract-explorer?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;&smartContracts$explorer$contractId=CCETBZNAQ4RL6HDW4B6WI4QD5LDRVDCGHHEEDUVFGP3RJYD45GVTWNOX;;) |
 
 ## Screenshots
@@ -291,7 +291,7 @@ The Soroban smart contract (`contract/contracts/contract/src/lib.rs`) implements
 <img width="1920" height="1080" alt="Contract Interaction" src="https://github.com/user-attachments/assets/67814f02-4caf-4d90-9fde-6e33351d5d2d" />
 
 ### Contract Interaction
-<img width="1920" height="1080" alt="Medical Records System UI" src="https://github.com/user-attachments/assets/108f7c10-3ad2-409e-91ad-c2f527abc65e" />
+<img width="1920" height="1080" alt="MedLedger UI" src="https://github.com/user-attachments/assets/108f7c10-3ad2-409e-91ad-c2f527abc65e" />
 
 ### Mobile UI
 <img width="715" height="1550" alt="IMG-20260429-WA0097" src="https://github.com/user-attachments/assets/6432b3fa-77c5-4e2c-be73-fdb02e34d388" />

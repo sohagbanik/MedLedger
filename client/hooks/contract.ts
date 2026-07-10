@@ -233,7 +233,7 @@ export function toScValBool(value: boolean): xdr.ScVal {
 }
 
 // ============================================================
-// Medical Records System — Contract Methods
+// MedLedger — Contract Methods
 // ============================================================
 
 /**
